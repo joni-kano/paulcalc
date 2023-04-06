@@ -1,5 +1,9 @@
 // ignore_for_file: file_names, unused_local_variable
 
+import 'dart:io';
+
+import 'package:excel/excel.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:paulcalc/exports.dart';
 
 class CalcScreen extends StatefulWidget {
@@ -24,59 +28,66 @@ class _CalcScreenState extends State<CalcScreen> {
 
   final TextEditingController referalamount = TextEditingController();
 
-  final TextEditingController depositresidentamount = TextEditingController();
+  final TextEditingController flightamount = TextEditingController();
 
   final TextEditingController balanceamount = TextEditingController();
 
-  void commissiondisposer() {
-    // Clean up the controller when the widget is disposed.
-    commisionamount.dispose();
-    super.dispose();
+  int? profits = 0,
+      commisionpaid = 0,
+      residentpermit = 0,
+      visafee = 0,
+      flight = 0,
+      refferalpay = 0;
+
+  void _profit() {
+    setState(() {
+      commisionpaid = int.parse(commisionamount.text);
+      residentpermit = int.parse(residentpermitamount.text);
+      visafee = int.parse(visafeeamount.text);
+      refferalpay = int.parse(referalamount.text);
+      flight = int.parse(flightamount.text);
+
+      profits = commisionpaid! -
+          (residentpermit! + visafee! + refferalpay! + flight!);
+
+      print("it is done");
+    });
   }
 
-  void residentpermitamountdisposer() {
-    residentpermitamount.dispose();
-    super.dispose();
+  void exportToExcel() async {
+    var excel = Excel.createExcel();
+    var sheet = excel['Sheet1'];
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String filePath = '${documentsDirectory.path}/example.xlsx';
+    print("this is the path:${filePath}");
+    //headers
+    sheet.appendRow([
+      "Fullname",
+      "Date"
+      "Commision Paid ",
+      "Refferal Pay",
+      "Resident Pay",
+      "Visa",
+      "Flight"
+      "Balance"
+      "Total"
+    ]);
+    //add data
+    sheet.appendRow([
+      fullname.text,
+      date.text,
+      commisionamount.text,
+      referalamount.text,
+      residentpermitamount.text,
+      visafeeamount.text,
+      flightamount.text,
+      balanceamount.text,
+      profits.toString(),
+    ]);
+    //save file
+    await excel.save(fileName: filePath);
   }
 
-  void visafeeamountdisposer() {
-    visafeeamount.dispose();
-    super.dispose();
-  }
-
-  void datedisposer() {
-    date.dispose();
-    super.dispose();
-  }
-
-  void fullnamedisposer() {
-    fullname.dispose();
-    super.dispose();
-  }
-
-  void referalamountdisposer() {
-    referalamount.dispose();
-    super.dispose();
-  }
-
-  void depositresidentamountdisposer() {
-    depositresidentamount.dispose();
-    super.dispose();
-  }
-
-  void balanceamountdisposer() {
-    balanceamount.dispose();
-    super.dispose();
-  }
-  void profit() {
-    
-    int commisionpaid = int.parse(commisionamount as String);
-    int residentpermit = int.parse(residentpermitamount as String);
-    int visafee = int.parse(visafeeamount as String);
-    int profits = commisionpaid + (residentpermit - visafee);
-
-    print("$profits");
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,18 +151,54 @@ class _CalcScreenState extends State<CalcScreen> {
                   controllername: visafeeamount,
                   inputType: TextInputType.number),
               TxtField(
-                  hint: "Deposit Resident ",
-                  controllername: depositresidentamount,
+                  hint: "Flight",
+                  controllername: flightamount,
                   inputType: TextInputType.number),
               TxtField(
                   hint: "Balance",
                   controllername: balanceamount,
                   inputType: TextInputType.number),
               const SizedBox(height: 16),
-              const TxtButton(bname: "Calculate"),
-              const Text(""),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.amber),
+                child: TextButton(
+                  onPressed: _profit,
+                  child: const Text(
+                    "Calculate",
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                ),
+              ),
               const SizedBox(
                 height: 16 / 2,
+              ),
+              Text(
+                "Total:$profits",
+                style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(
+                height: 12,
+              ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.green),
+                child: TextButton(
+                  onPressed: exportToExcel,
+                  child: const Text(
+                    "Export Excel",
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                ),
               ),
             ],
           ),
@@ -160,5 +207,15 @@ class _CalcScreenState extends State<CalcScreen> {
     );
   }
 
-  
+  void allFieldsDisposer() {
+    commisionamount.dispose();
+    residentpermitamount.dispose();
+    visafeeamount.dispose();
+    date.dispose();
+    fullname.dispose();
+    referalamount.dispose();
+    flightamount.dispose();
+    balanceamount.dispose();
+    super.dispose();
+  }
 }

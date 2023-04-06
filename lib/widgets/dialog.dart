@@ -1,21 +1,15 @@
 import 'package:paulcalc/exports.dart';
 
 class Finaldisplay extends StatelessWidget {
-  const Finaldisplay({super.key});
+  Finaldisplay({super.key, required this.fprofits});
 
-  get profits => null;
+  int? fprofits;
 
-  Widget resultProfits(CalcScreen profits) {
-    return profits;
-  }
-  
   @override
-  
   Widget build(BuildContext context) {
-    
     return AlertDialog(
       title: const Text("The balance is : "),
-      content: Text(profits.toString()),
+      content: Text(fprofits.toString()),
       actions: <Widget>[
         TextButton(
           onPressed: () {
